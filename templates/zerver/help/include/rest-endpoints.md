@@ -8,6 +8,7 @@
 * [Remove an emoji reaction](/api/remove-emoji-reaction)
 * [Render a message](/api/render-message)
 * [Upload a file](/api/upload-file)
+* [Remove an attachment](/api/remove-attachment)
 * [Delete a message](/api/delete-message)
 * [Construct a narrow](/api/construct-narrow)
 * [Get a message's edit history](/api/get-message-history)

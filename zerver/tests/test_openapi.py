@@ -174,8 +174,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # List all files uploaded by current user.  May want to add support
         # for a larger list available to administrators?
         '/attachments',
-        # Delete a file uploaded by current user.
-        '/attachments/{attachment_id}',
         # List data exports for organization (GET) or request one (POST)
         '/export/realm',
         # Delete a data export.

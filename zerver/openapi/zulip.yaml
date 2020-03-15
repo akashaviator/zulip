@@ -297,6 +297,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
+  /attachments/{attachment_id}:
+    delete:
+      description: Remove an attachment uploaded by the requesting user.
+      parameters:
+      - name: attachment_id
+        in: path
+        description: The ID of the attachment to be deleted.
+        schema:
+          anyOf:
+            - type: string
+            - type: integer
+        example: 1
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                        "result": "success",
+                        "msg": ""
+                      }
   /messages:
     get:
       description: |
