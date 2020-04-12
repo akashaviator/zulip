@@ -5,6 +5,7 @@ const config = {
     zuliprc: './.zuliprc',
 };
 
+//{code_example|start}
 // Send a stream message
 zulip(config).then((client) => {
     // Send a message

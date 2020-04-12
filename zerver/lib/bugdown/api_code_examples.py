@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional, List, Tuple
 import markdown
 
 import zerver.openapi.python_examples
+import zerver.openapi.javascript_examples
 from zerver.openapi.openapi import get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
@@ -99,6 +100,29 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     for line in snippet:
         # Remove one level of indentation and strip newlines
         code_example.append(line[4:].rstrip())
+
+    code_example.append('```')
+
+    return code_example
+
+def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
+                               **kwargs: Any) -> List[str]:
+    file_name = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
+    function_source_lines = open("zerver/openapi/{}".format(file_name),"r")
+
+    if admin_config:
+        config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
+    else:
+        config = PYTHON_CLIENT_CONFIG.splitlines()
+
+    snippet = function_source_lines.readlines()
+
+    code_example = []
+    code_example.append('```js')
+
+    for line in snippet:
+        # Remove one level of indentation and strip newlines
+        code_example.append(line.rstrip())
 
     code_example.append('```')
 
@@ -259,6 +283,11 @@ SUPPORTED_LANGUAGES = {
     },
     'curl': {
         'render': render_curl_example
+    },
+    'javascript': {
+        'client_config': PYTHON_CLIENT_CONFIG,
+        'admin_config': PYTHON_CLIENT_ADMIN_CONFIG,
+        'render': render_javascript_code_example,
     }
 }  # type: Dict[str, Any]
 
