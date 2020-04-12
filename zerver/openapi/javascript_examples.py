@@ -1,4 +1,4 @@
 
 TEST_FUNCTIONS = {
-    "/messages:post": "test.js"
+    "/messages:post": "sendMessage.js"
 }

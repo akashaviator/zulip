@@ -108,14 +108,14 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
                                **kwargs: Any) -> List[str]:
     file_name = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
-    function_source_lines = open("zerver/openapi/{}".format(file_name),"r")
+    file = open("zerver/openapi/javascript_examples/{}".format(file_name),"r")
 
     if admin_config:
         config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
     else:
         config = PYTHON_CLIENT_CONFIG.splitlines()
 
-    snippet = function_source_lines.readlines()
+    snippet = file.readlines()
 
     code_example = []
     code_example.append('```js')
@@ -285,8 +285,6 @@ SUPPORTED_LANGUAGES = {
         'render': render_curl_example
     },
     'javascript': {
-        'client_config': PYTHON_CLIENT_CONFIG,
-        'admin_config': PYTHON_CLIENT_ADMIN_CONFIG,
         'render': render_javascript_code_example,
     }
 }  # type: Dict[str, Any]
