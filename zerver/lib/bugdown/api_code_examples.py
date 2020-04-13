@@ -107,22 +107,23 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 
 def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
                                **kwargs: Any) -> List[str]:
-    file_name = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
-    file = open("zerver/openapi/javascript_examples/{}".format(file_name),"r")
+    method = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
+    function_source_lines = inspect.getsourcelines(method)[0]
 
     if admin_config:
         config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
     else:
         config = PYTHON_CLIENT_CONFIG.splitlines()
 
-    snippet = file.readlines()
+    snippet = extract_python_code_example(function_source_lines, [])
 
     code_example = []
     code_example.append('```js')
+    code_example.extend(config)
 
     for line in snippet:
         # Remove one level of indentation and strip newlines
-        code_example.append(line.rstrip())
+        code_example.append(line[4:].rstrip())
 
     code_example.append('```')
 
