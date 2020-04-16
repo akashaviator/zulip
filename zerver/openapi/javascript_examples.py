@@ -1,12 +1,11 @@
 
-TEST_FUNCTIONS = {
-    "/messages:post": "sendMessage.js"
-}
 from typing import Dict, Any, Optional, Iterable, Callable, Set, List
 
 import json
 import os
 import sys
+import subprocess
+
 from functools import wraps
 
 from zerver.lib import mdiff
@@ -214,3 +213,68 @@ def test_the_api(client, nonadmin_client):
         print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS)
         sys.exit(1)
 '''
+
+
+@openapi_test_function("/messages:post")
+def send_message():
+    # type: () -> int
+
+    js_code = """
+const zulip = require('zulip-js');
+
+// Pass the path to your zuliprc file here.
+const config = {
+  username: process.env.ZULIP_USERNAME,
+  apiKey: process.env.ZULIP_API_KEY,
+  realm: process.env.ZULIP_REALM
+};
+const config = {
+    zuliprc: './.zuliprc',
+};
+# {code_example|start}
+// Send a stream message
+zulip(config).then((client) => {
+    // Send a message
+    const params = {
+        to: 'Denmark',
+        type: 'stream',
+        subject: 'Castle',
+        content: 'I come not, friends, to steal away your hearts.'
+    }
+
+    client.messages.send(params).then(console.log);
+});
+
+// Send a private message
+zulip(config).then((client) => {
+    // Send a private message
+    const user_id = 9;
+    const params = {
+        to: [user_id],
+        type: 'private',
+        content: 'With mirth and laughter let old wrinkles come.',
+    }
+
+    client.messages.send(params).then(console.log);
+});
+# {code_example|end}
+"""
+    response_json = subprocess.check_output(["node"] + js_code.splitlines(),shell=True).decode('utf-8')
+    print(response_json)
+    for x in response_json:
+        validate_against_openapi_schema(x, '/messages', 'post', '200')
+    
+
+def test_js_bindings(client):
+    # type: (Client) -> None
+
+    zuliprc = open("./.zuliprc","w")
+    zuliprc.writelines(["[api]\n",
+                        "email=" + client.email + "\n",
+                        "key=" + client.api_key + "\n"
+                        "site=" + client.base_url[:-5],
+                       ])
+    print(zuliprc)
+    zuliprc.close()
+    send_message()
+
