@@ -216,22 +216,17 @@ def test_the_api(client, nonadmin_client):
 
 
 @openapi_test_function("/messages:post")
-def send_message():
-    # type: () -> int
-
+def send_message(key):
+    print("2")
+    print(key)
     js_code = """
-const zulip = require('zulip-js');
+const zulip = require('hh');
 
 // Pass the path to your zuliprc file here.
 const config = {
-  username: process.env.ZULIP_USERNAME,
-  apiKey: process.env.ZULIP_API_KEY,
-  realm: process.env.ZULIP_REALM
-};
-const config = {
     zuliprc: './.zuliprc',
 };
-# {code_example|start}
+
 // Send a stream message
 zulip(config).then((client) => {
     // Send a message
@@ -257,17 +252,37 @@ zulip(config).then((client) => {
 
     client.messages.send(params).then(console.log);
 });
-# {code_example|end}
 """
-    response_json = subprocess.check_output(["node"] + js_code.splitlines(),shell=True).decode('utf-8')
-    print(response_json)
+    print("3")
+    #a=subprocess.check_output(["node","\nconsole.log('fdf')"],universal_newlines=True)
+    '''
+    subprocess.check_output(['node'],stdin=subprocess.PIPE,universal_newlines=True)
+    subprocess.check_output(input='\n')
+    a=subprocess.check_output(js_code)
+    '''
+    process = subprocess.Popen('node', stdin=subprocess.PIPE, stdout=subprocess.PIPE,universal_newlines=True)
+    out, err = process.communicate(js_code)
+    print(out)
+    '''
+
+    subprocess.check_output()
+    subprocess.check_output('console.log', stdout=a, stderr=subprocess.PIPE, shell=True)
+    
+    print(a)
+    '''
+    #a=subprocess.check_output("console.log('ddd')")
+    #subprocess.check_output("console.log('fd')")
+    # + js_code.splitlines(),shell=True).decode('utf-8')
+
+    #print(response_json)
+    '''
     for x in response_json:
         validate_against_openapi_schema(x, '/messages', 'post', '200')
-    
 
+'''
 def test_js_bindings(client):
     # type: (Client) -> None
-
+    '''
     zuliprc = open("./.zuliprc","w")
     zuliprc.writelines(["[api]\n",
                         "email=" + client.email + "\n",
@@ -276,5 +291,8 @@ def test_js_bindings(client):
                        ])
     print(zuliprc)
     zuliprc.close()
-    send_message()
+    '''
+    print("1")
+    print(client.api_key)
+    send_message(client.api_key)
 
