@@ -220,11 +220,11 @@ def send_message(key):
     print("2")
     print(key)
     js_code = """
-const zulip = require('hh');
+const zulip = require('zulip-js');
 
 // Pass the path to your zuliprc file here.
 const config = {
-    zuliprc: './.zuliprc',
+    zuliprc: './zerver/openapi/.zuliprc',
 };
 
 // Send a stream message
@@ -239,7 +239,7 @@ zulip(config).then((client) => {
 
     client.messages.send(params).then(console.log);
 });
-
+/*
 // Send a private message
 zulip(config).then((client) => {
     // Send a private message
@@ -251,18 +251,19 @@ zulip(config).then((client) => {
     }
 
     client.messages.send(params).then(console.log);
-});
+});*/
 """
     print("3")
     #a=subprocess.check_output(["node","\nconsole.log('fdf')"],universal_newlines=True)
-    '''
-    subprocess.check_output(['node'],stdin=subprocess.PIPE,universal_newlines=True)
-    subprocess.check_output(input='\n')
-    a=subprocess.check_output(js_code)
-    '''
-    process = subprocess.Popen('node', stdin=subprocess.PIPE, stdout=subprocess.PIPE,universal_newlines=True)
-    out, err = process.communicate(js_code)
-    print(out)
+    
+    a=subprocess.check_output(['node'],input=bytes(js_code,encoding='utf-8')).decode('utf-8')
+    #a=subprocess.check_output(js_code)
+    print(json.loads(a))
+    """
+    with subprocess.Popen('node',stdin=subprocess.PIPE,universal_newlines=True) as process:
+        out, err = process.communicate(js_code)
+    """
+
     '''
 
     subprocess.check_output()
@@ -282,8 +283,8 @@ zulip(config).then((client) => {
 '''
 def test_js_bindings(client):
     # type: (Client) -> None
-    '''
-    zuliprc = open("./.zuliprc","w")
+
+    zuliprc = open("./zerver/openapi/.zuliprc","w")
     zuliprc.writelines(["[api]\n",
                         "email=" + client.email + "\n",
                         "key=" + client.api_key + "\n"
@@ -291,7 +292,7 @@ def test_js_bindings(client):
                        ])
     print(zuliprc)
     zuliprc.close()
-    '''
+
     print("1")
     print(client.api_key)
     send_message(client.api_key)
