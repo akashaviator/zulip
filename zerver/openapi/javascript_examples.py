@@ -15,9 +15,6 @@ from zerver.models import get_realm, get_user
 
 from zulip import Client
 
-ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
-
 TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
 REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
 CALLED_TEST_FUNCTIONS = set()  # type: Set[str]
@@ -41,6 +38,76 @@ def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Calla
         return _record_calls_wrapper
     return wrapper
 
+def run_js_code(js_code: str) -> Dict[str, Any]:
+
+    def get_json_data(response_list: str):
+
+        js_code="""
+var json_data = {response_list};
+json_data.forEach(
+    (data) => console.log(JSON.stringify(eval("(" + data + ")")))
+);
+""".format(response_list=response_list)
+        output = subprocess.check_output(['node'],
+                                        input=js_code,
+                                        universal_newlines=True)
+
+        responses = [json.loads(response) for response in output.splitlines()]
+        
+        return responses
+
+
+    output = subprocess.check_output(['node'],input=js_code,universal_newlines=True)
+    responses = get_json_data(output.splitlines())
+
+    return responses
+
+@openapi_test_function("/messages:post")
+def send_message(key):
+
+    js_code = """
+const zulip = require('zulip-js');
+
+// Pass the path to your zuliprc file here.
+const config = {
+    zuliprc: './zerver/openapi/.zuliprc',
+};
+// {code_example|start}
+/* Send a stream message */
+zulip(config).then((client) => {
+    // Send a message
+    const params = {
+        to: 'Denmark',
+        type: 'stream',
+        subject: 'Castle',
+        content: 'I come not, friends, to steal away your hearts.'
+    }
+
+    client.messages.send(params).then(console.log);
+});
+// {code_example|end}
+
+// {code_example|start}
+/* Send a private message*/
+zulip(config).then((client) => {
+    // Send a private message
+    const user_id = 9;
+    const params = {
+        to: [user_id],
+        type: 'private',
+        content: 'With mirth and laughter let old wrinkles come.',
+    }
+
+    client.messages.send(params).then(console.log);
+});
+// {code_example|end}
+"""
+    result_list=run_js_code(js_code)
+
+    for result in result_list:
+        validate_against_openapi_schema(result, '/messages', 'post', '200')
+
+
 def test_messages(client):
     # type: (Client) -> None
 
@@ -58,62 +125,16 @@ def test_js_bindings(client):
 
     zuliprc.close()
 
-    test_messages(client)
-    os.remove("./zerver/openapi/.zuliprc")
+    try:
+        test_messages(client)
+    finally:
+        os.remove("./zerver/openapi/.zuliprc")
 
     sys.stdout.flush()
     if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:
         print("Error!  Some @openapi_test_function tests were never called:")
         print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS)
         sys.exit(1)
-
-
-@openapi_test_function("/messages:post")
-def send_message(key):
-
-    js_code = """
-const zulip = require('zulip-js');
-
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: './zerver/openapi/.zuliprc',
-};
-
-// Send a stream message
-zulip(config).then((client) => {
-    // Send a message
-    const params = {
-        to: 'Denmark',
-        type: 'stream',
-        subject: 'Castle',
-        content: 'I come not, friends, to steal away your hearts.'
-    }
-
-    client.messages.send(params).then((res)=>{res=JSON.stringify(res);console.log(res)});
-});
-
-// Send a private message
-zulip(config).then((client) => {
-    // Send a private message
-    const user_id = 9;
-    const params = {
-        to: [user_id],
-        type: 'private',
-        content: 'With mirth and laughter let old wrinkles come.',
-    }
-
-    client.messages.send(params).then((res)=>{res=JSON.stringify(res);console.log(res)});
-});
-"""
-   
-    e=subprocess.check_output(['node'],input=js_code,universal_newlines=True)
-    e=e.split('\n')
-    z=[]
-    for i in range(len(e)-1):
-        z.append(json.loads(e[i]))
-    print(z)
-    for a in z:
-        validate_against_openapi_schema(a, '/messages', 'post', '200')
 
 
 
