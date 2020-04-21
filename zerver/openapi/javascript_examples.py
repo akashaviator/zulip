@@ -1,5 +1,5 @@
 
-from typing import Dict, Any, Callable, Set
+from typing import Dict, Any, Callable, Set, List
 
 import json
 import os
@@ -35,32 +35,31 @@ def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Calla
         return _record_calls_wrapper
     return wrapper
 
-def run_js_code(js_code: str) -> Dict[str, Any]:
+def run_js_code(js_code: str) -> List[Dict[str, Any]]:
 
-    def get_json_data(response_list: str):
+    def get_json_data(response_list: List[str]) -> List[Dict[str, Any]]:
 
-        js_code="""
+        js_code = """
 var json_data = {response_list};
 json_data.forEach(
     (data) => console.log(JSON.stringify(eval("(" + data + ")")))
 );
 """.format(response_list=response_list)
         output = subprocess.check_output(['node'],
-                                        input=js_code,
-                                        universal_newlines=True)
+                                         input=js_code,
+                                         universal_newlines=True)
 
         responses = [json.loads(response) for response in output.splitlines()]
-        
+
         return responses
 
-
-    output = subprocess.check_output(['node'],input=js_code,universal_newlines=True)
+    output = subprocess.check_output(['node'], input=js_code, universal_newlines=True)
     responses = get_json_data(output.splitlines())
 
     return responses
 
 @openapi_test_function("/messages:post")
-def send_message(key):
+def send_message(key) -> None:
 
     js_code = """
 const zulip = require('zulip-js');
@@ -99,26 +98,24 @@ zulip(config).then((client) => {
 });
 // {code_example|end}
 """
-    result_list=run_js_code(js_code)
+    result_list = run_js_code(js_code)
 
     for result in result_list:
         validate_against_openapi_schema(result, '/messages', 'post', '200')
 
 
-def test_messages(client):
-    # type: (Client) -> None
-
+def test_messages(client: Client) -> None:
     send_message(client)
 
-def test_js_bindings(client):
-    # type: (Client) -> None
+def test_js_bindings(client: Client) -> None:
 
-    zuliprc = open("./zerver/openapi/.zuliprc","w")
-    zuliprc.writelines(["[api]\n",
-                        "email=" + client.email + "\n",
-                        "key=" + client.api_key + "\n"
-                        "site=" + client.base_url[:-5],
-                       ])
+    zuliprc = open("./zerver/openapi/.zuliprc", "w")
+    zuliprc.writelines(
+        ["[api]\n",
+         "email=" + client.email + "\n",
+         "key=" + client.api_key + "\n",
+         "site=" + client.base_url[:-5]]
+    )
 
     zuliprc.close()
 

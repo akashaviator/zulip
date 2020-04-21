@@ -14,7 +14,7 @@ Send a stream or a private message.
 {tab|js}
 
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-{generate_code_example(javascript)|/messages:post|example}
+{generate_code_example(JavaScript)|/messages:post|example}
 {tab|curl}
 
 ``` curl

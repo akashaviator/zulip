@@ -82,7 +82,7 @@ def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str,
     return (language, {})
 
 def extract_code_example(source: List[str], snippet: List[str],
-                         example_regex: Pattern) -> List[str]:
+                         example_regex: Pattern[str]) -> List[str]:
     start = -1
     end = -1
     for line in source:
@@ -128,7 +128,7 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     return code_example
 
 def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
-                               **kwargs: Any) -> List[str]:
+                                   **kwargs: Any) -> List[str]:
     method = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
@@ -306,7 +306,7 @@ SUPPORTED_LANGUAGES = {
     'curl': {
         'render': render_curl_example
     },
-    'javascript': {
+    'JavaScript': {
         'render': render_javascript_code_example,
     }
 }  # type: Dict[str, Any]
