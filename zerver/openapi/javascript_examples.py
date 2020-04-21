@@ -66,7 +66,7 @@ const zulip = require('zulip-js');
 
 // Pass the path to your zuliprc file here.
 const config = {
-    zuliprc: './zerver/openapi/.zuliprc',
+    zuliprc: '.zuliprc',
 };
 // {code_example|start}
 /* Send a stream message */
@@ -109,7 +109,7 @@ def test_messages(client: Client) -> None:
 
 def test_js_bindings(client: Client) -> None:
 
-    zuliprc = open("./zerver/openapi/.zuliprc", "w")
+    zuliprc = open(".zuliprc", "w")
     zuliprc.writelines(
         ["[api]\n",
          "email=" + client.email + "\n",
@@ -122,7 +122,7 @@ def test_js_bindings(client: Client) -> None:
     try:
         test_messages(client)
     finally:
-        os.remove("./zerver/openapi/.zuliprc")
+        os.remove(".zuliprc")
 
     sys.stdout.flush()
     if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:
