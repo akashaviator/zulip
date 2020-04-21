@@ -1,5 +1,5 @@
 
-from typing import Dict, Any, Optional, Iterable, Callable, Set, List
+from typing import Dict, Any, Callable, Set
 
 import json
 import os
@@ -8,10 +8,7 @@ import subprocess
 
 from functools import wraps
 
-from zerver.lib import mdiff
 from zerver.openapi.openapi import validate_against_openapi_schema
-
-from zerver.models import get_realm, get_user
 
 from zulip import Client
 
@@ -135,6 +132,3 @@ def test_js_bindings(client):
         print("Error!  Some @openapi_test_function tests were never called:")
         print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS)
         sys.exit(1)
-
-
-

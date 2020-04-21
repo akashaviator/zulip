@@ -900,20 +900,6 @@ def upload_file(client: Client) -> None:
 
     validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
 
-@openapi_test_function("/attachments/{attachment_id}:delete")
-def remove_attachment(client):
-    # type: (Client, int) -> None
-    # {code_example|start}
-    attachment_id = 1
-    result = client.call_endpoint(
-            url='attachments/{}'.format(attachment_id),
-            method='DELETE',
-        )
-    # {code_example|end}
-
-    validate_against_openapi_schema(result, '/attachments/{attachment_id}',
-                                    'delete', '200')
-
 @openapi_test_function("/users/me/{stream_id}/topics:get")
 def get_stream_topics(client: Client, stream_id: int) -> None:
 
@@ -1139,7 +1125,6 @@ def test_users(client: Client) -> None:
     get_profile(client)
     update_notification_settings(client)
     upload_file(client)
-    remove_attachment(client)
     set_typing_status(client)
     get_user_presence(client)
     update_presence(client)
